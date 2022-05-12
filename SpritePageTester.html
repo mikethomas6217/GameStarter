@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title>Game Template</title>
+    <!- This next line refrences the library of game functions I've written to help with game development->
+
+    <script type="text/javascript" src="gamefunctions_V5_0.js" ></script>
+    <script type="text/javascript" src="GameInit.js" ></script>
+    <script type="text/javascript" src="bart.js" ></script>
+    <script type="text/javascript" src="BART_OBJ.js" ></script>
+
+    <style>* { padding: 0; margin: 0; } canvas { background: #eee; display: block; margin: 0 auto; }</style>
+</head>
+<body>
+    <canvas id="myCanvas" width="1200" height="600" oncontextmenu="return false;" ></canvas>
+    <text id="debug"></text>
+<script>
+//************************************Game Functions ****************************************
+//functions you have written that are unique to your game
+
+//*** Event handlers
+//*** The following event handlers are written to use functions built
+//*** into the game library.  If you want them to work differently than
+//*** the library simply replace them with your own.  By default the key
+//*** handlers keep track of each key (unique names defined for each) //*** marking them as either true if pressed or false if not
+   
+   
+    
+    //**********************Main draw function **************************
+    //This is really the code that is run EVERY TIME we do a screen
+    //refresh
+    //*******************************************************************
+       function draw() {         
+
+     
+        //***  STEP #1 Process any keystrokes / mouse movements
+        //*** If you have any Automated movements by your computer
+        //** "adversaries" I'd place that logic here too
+        //Process clicks - just checking the status of any keys I'm interested in
+
+        if (myKeys.rightArrow) {
+            //Put in logic to check collision with terrain
+            speed--;
+            if (speed < 1){
+                speed = 1;
+            }
+
+            }
+           
+       if (myKeys.leftArrow) {
+        //Put in logic to check collision with terrain
+        speed++;
+
+        }
+           
+        if (myKeys.upArrow) {
+        //Put in logic to check collision with terrain
+        sizeMult += 0.01;
+        curChar.resize(sizeMult);
+        }
+        if (myKeys.downArrow) {
+        //Put in logic to check collision with terrain
+        sizeMult -= 0.01;
+        curChar.resize(sizeMult);
+        }
+
+
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+        
+    score.draw("Row: "+ curChar.currentRow + " Frame:" + curChar.currentFrame + " (" + curChar.frame[bart.currentRow].name+ ")" );
+    showSpeed.draw("Delay: " + speed );   
+    showSize.draw("Size: " + sizeMult ); 
+    curChar.draw();
+
+    if (game.gameIterator%speed == 0 ){
+        curChar.advanceFrame();
+    }
+    //KEEP THIS COMMAND right where it is, at the end of the draw function - this controls the rate the repaint occurs and keeps it consistent regardless of the speed of the computer
+    game.gameIterate();
+
+    requestAnimationFrame(draw);    
+}
+
+//**************************************************************************************
+// *********************** Begin Main portion of program *******************************
+//**************************************************************************************
+//** You can actually think of this as the initialization phase of the program.  This is
+//** where you first load your images and create any variables you'll use throughout the
+//** rest of the program
+
+//**DO NOT remove these two variables.  
+//**They are what help us "reference" the canvas and "paint" on it
+
+            var canvas = document.getElementById("myCanvas");
+    var ctx = canvas.getContext("2d");
+   
+    var score = new GameText();
+    score.font = "48px Arial";
+    score.fillStyle = "Blue";
+    score.x = 100;
+    score.y = 45;
+    score.alpha = 0.5;
+    
+    var showSpeed = new GameText();
+    showSpeed.font = "48px Arial";
+    showSpeed.fillStyle = "Blue";
+    showSpeed.x = 100;
+    showSpeed.y = 85;
+    showSpeed.alpha = 0.5;
+    
+    var showSize = new GameText();
+    showSize.font = "48px Arial";
+    showSize.fillStyle = "Blue";
+    showSize.x = 100;
+    showSize.y = 135;
+    showSize.alpha = 0.5;
+    
+    var speed = 25;
+    var sizeMult = 1;
+    
+    var background = new Image();
+    background.src = game.imageDir + "maze2.png";
+    //bart2 = new BART_OBJ(10,10,imgSimpsons_Bart);
+    curChar = bart;
+    curChar.x = 400;
+    curChar.y = 400;
+    background.onload = function() {
+       var bg = new ScrollingBackGround(0,0,1200,600,1200,600,background);
+
+
+        draw();
+    };
+
+
+</script>
+
+</body>
+</html>

@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title>Game Template</title>
+    <!- -------------------------------------------------------------------------------------------------->
+    <!- This next line references the library of game functions teacher has written to help with game 
+    <!- development.  Students claim no credit for its development                                                     ->
+    <!- -------------------------------------------------------------------------------------------------->
+    <script type="text/javascript" src="gamefunctions_V4_0.js" ></script>
+    <style>* { padding: 0; margin: 0; } canvas { background: #eee; display: block; margin: 0 auto; }</style>
+</head>
+<body>
+    <canvas id="myCanvas" width="1200" height="600" oncontextmenu="return false;" ></canvas>
+    <text id="debug"></text>
+<script>
+//*********************************************** C R E D I T S ********************************************
+//** STUDENTS AND AP GRADERS - This is the section where you should provide credit for all resources ( ie 
+//** images & sound files) used in your game.  GRADERS, as the teacher I have provided a template as well as
+//** a game library ( referenced above ) as a starting point, but the student's game design, functions,
+//** algorithms, and abstrctions are theirs unless otherwise noted
+//** IMAGES - Image Name                  URL or Other Source          Credit Given
+//**
+//** SOUNDS - Sound Name                  URL or Other Source          Credit Given
+    
+//*********************************************Game Functions **********************************************
+// functions STUDENT written that are unique to your game.  Best to list alphabetically.
+// If you had any assistance developing any of these functions please provide appropriate credit above the
+// function itself
+// **********************************************************************************************************
+    
+    
+    
+//***********************************************************************************************************
+//*** Event handlers
+//*** The following event handlers are written to use functions built
+//*** intop the game library.  As such, the default event handlers are TEACHER written.  However, student will
+//*** write all code that utlizes these event handlers - in Step #1 within the draw loop
+//*** If you want them to work differently than the library simply replace them with your own.  
+//*** By default the key handlers keep track of each key (unique names defined for each) //*** marking them 
+//*** as either true if pressed or false if not pressed
+    function keyDownHandler(e) {
+          myKeys.processDownKey(e);
+    }
+    function keyUpHandler(e) {
+        myKeys.processUpKey(e);
+    }
+    
+//*** The default mouse handlers are TEACHER written 
+//*** the mouse handlers keep track of both WHERE the mouse is at all times AND if any of the buttons is 
+//*** currenly pressed or not
+    function mouseMoveHandler(e) {
+        myKeys.processMouseMove(e);
+    }
+    function mouseUpHandler(e) {
+        myKeys.processMouseUp(e);
+    }
+    function mouseDownHandler(e) {
+        myKeys.processMouseDown(e);
+    }
+    
+//**********************Main draw function **************************
+//This is really the code that is run EVERY TIME we do a screen
+//refresh - unless otherwise noted this is STUDENT code
+//*******************************************************************
+       function draw() {        
+        //***  STEP #1 Process any keystrokes / mouse movements
+        //*** If you have any Automated movements by your computer
+        //** "adversaries" I'd place that logic here too
+        //Process clicks - just checking the status of any keys I'm interested in
+   
+        if (myKeys.rightArrow) {
+            
+        }
+ 
+    //******************** STEP #2 Any game logic ***********************
+           
+           
+    //************* STEP #3 Draw all game objects on teh screen *********
+
+    //FIRST Clear the Screen to prepare for a repaint   
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+           
+   //First draw the background image
+
+   //Now draw any ACTIVE images
+           
+//****!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+///*** I would usually place this in the GAME LOGIC section, but I wanted to keep the code together for the demonstration
+    if (game.gameIterator%5==0){
+        fire.advanceFrame();
+    }
+           fire.draw();
+    if (game.gameIterator%3==0){
+        mario.advanceFrame();
+    }
+    if (mario.y<0){ //mario was moving up at left - change to move right
+        mario.y = 0;
+        mario.dX = 3;
+        mario.dY = 0;
+        mario.currentDir = 1;
+    }       
+    else if (mario.x<0){ //mario was moving left at bottom - change to move up
+        mario.x = 0;
+        mario.dX = 0;
+        mario.dY = -3;
+        mario.currentDir = 0;
+    }
+    else if (mario.x>canvas.width-MARIO_WIDTH){ //mario was moving left at bottom - change to move up
+        mario.x = canvas.width-MARIO_WIDTH;
+        mario.dX = 0;
+        mario.dY = 3;
+        mario.currentDir = 2;
+    }
+    else if (mario.y>canvas.height-MARIO_HEIGHT){ //mario was moving left at bottom - change to move up
+        mario.y = canvas.height-MARIO_HEIGHT;
+        mario.dX = -3;
+        mario.dY = 0;
+        mario.currentDir = 3;
+    }
+    mario.x+=mario.dX;
+    mario.y += mario.dY;       
+    mario.draw();
+
+//****!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+           
+    game.gameIterate();//Teacher provided code - required for game library to work properly
+    requestAnimationFrame(draw); //Teacher provided code - Keep this line as it is required for a fluid repaining of the canvas    
+}
+
+//**************************************************************************************
+// *********************** Begin Main portion of program *******************************
+//**************************************************************************************
+//** You can actually think of this as the initialization phase of the program.  This is
+//** where you first load your images and create any variables you'll use throughout the
+//** rest of the program.
+//** ALL of this code is teacher provided and should not be changed.  Student code should
+//** go in STUDENT SECTION marked below
+//** Because this code is NOT in a function, it is the first thing to run and only runs 
+//** ONCE.  The very last thing this code does is call our game loop ( which is the 
+//** draw() funciton
+//***************************************************************************************
+
+//**DO NOT remove these two variables.  
+//**They are what help us "reference" the canvas and "paint" on it
+    var canvas = document.getElementById("myCanvas");
+    var ctx = canvas.getContext("2d");
+
+    //Variables that determine how fast (and if) the background moves.  If the background
+    //does NOT move set both to 0 - this is the default;
+    //game.bgDX = -1;
+    //game.bgDY = 0;
+    
+    //Defining the EVENT LISTENERS - looks for any keybord key being pressed and released
+    //Note that it is in these EventHandler functions that you actually capture WHICH key was pressed or released.  For each key you
+    //are interested in you then perform specific actions.  In the approach I have here we are simply indicating if the key is pressed or
+    //not by changing the related keypressed variable to true or false.  Then we take actions later based on these variables
+
+    document.addEventListener("keydown", keyDownHandler, false);
+    document.addEventListener("keyup", keyUpHandler, false);
+    document.addEventListener("mousemove", mouseMoveHandler, false);
+    document.addEventListener("mousedown", mouseDownHandler, false);
+    document.addEventListener("mouseup", mouseUpHandler, false);
+    // Create the game Object - Always have this declared as it has
+    //important properies other areas depend upon
+    var game = new GameMaster();
+    // Object that holds all keypress and release data   
+    var myKeys = new KeysPresses(); 
+    
+    //****************STUDENT INITIALIZATION CODE SECTION ****************
+    // ************* Loading/creating your characters, background,
+    // ***  and terrain.  This is all what I would call "pre-processing
+    // *** Kind of all the setup work that must occur BEFORE we actually
+    // *** get into our game loop
+    // ******************************************************************
+    
+    //****!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+    
+    var imgFire = new Image();
+    imgFire.src = game.imageDir + "CampFire.png";
+    var fire = new SpriteSheet(200,200,64,64,128,126,0,4,imgFire);
+    
+    var imgMario = new Image();
+    imgMario.src = game.imageDir + "mario.png";
+    var MARIO_HEIGHT = 128;
+    var MARIO_WIDTH=94;
+    var mario = new SpriteSheet(0,canvas.height-100,47,64,MARIO_WIDTH,MARIO_HEIGHT,3,5,imgMario);
+    
+    mario.dX = 0;
+    mario.dY = -2;
+    mario.currentDir = 0;
+    //****!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+    
+    //****************************** Final Image Load Section ****************
+    //** OK - this is odd, but there is a reason for this...
+    //** images can take a while to load - at least in computer time, so
+    //** we want to make sure they have all loaded BEFORE, we actually 
+    //** start the game. For this reason we don't call the draw() function
+    //** ( which is our game loop) until the last image has loaded.  
+    //** The onload is an event is triggered when the last image variable 
+    //** imgPacman is actually loaded.  At that point we know it is safe call 
+    //** the draw() function - which starts our gameloop
+    //** **********************************************************************
+    var lastImage = new Image();
+    lastImage.src = game.imageDir + "lastImage.png";
+    lastImage.onload = function() {
+        //** put the image in the appropriate Sprite/Spritesheet
+        draw(); //This calls the draw() function - which is our game loop
+    };
+
+
+</script>
+
+</body>
+</html>

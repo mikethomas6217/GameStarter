@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title>Game Template</title>
+    <!- -------------------------------------------------------------------------------------------------->
+    <!- This next line references the library of game functions teacher has written to help with game 
+    <!- development.  Students claim no credit for its development                                                     ->
+    <!- -------------------------------------------------------------------------------------------------->
+    <script type="text/javascript" src="gamefunctions_V4_0.js" ></script>
+    <style>* { padding: 0; margin: 0; } canvas { background: #eee; display: block; margin: 0 auto; }</style>
+</head>
+<body>
+<div align=center>
+<textarea rows = "50" cols = "80" align= center>
+first = 1;    
+console.log("first before function call = " + first);
+    
+myFunct();
+    
+//console.log("second = " + second);
+console.log("first after function call = " + first);
+    
+function myFunct() {
+    var first = 2;
+    //var second = "Bob";
+    console.log("first in function but before for loop = " + first);
+    console.log("second in function but before for loop = " + second + " and second is a " + typeof second);
+    for (let first = 0; first <10; first++){
+        let third = 99;
+        console.log("first within for loop = " + first + " and third = " + third);
+    }
+    //console.log("third = " + third);
+    console.log("first in function but after for loop = " + first);
+}
+</textarea>
+</div>
+<script>
+first = 1;    
+console.log("first before function call = " + first);
+    
+myFunct();
+    
+//console.log("second = " + second);
+console.log("first after function call = " + first);
+    
+function myFunct() {
+    var first = 2;
+    var second = "Bob";
+    console.log("second in function but before for loop = " + second + " and second is a " + typeof second);
+    console.log("first in function but before for loop = " + first);
+    for (let first = 0; first <10; first++){
+        let third = 99;
+        console.log("first within for loop = " + first + " and third = " + third);
+    }
+    //console.log("third = " + third);
+    console.log("first in function but after for loop = " + first);
+}
+
+
+</script>
+
+</body>
+</html>

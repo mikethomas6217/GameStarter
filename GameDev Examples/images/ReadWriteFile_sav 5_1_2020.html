@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title>Game Template</title>
+    <!- This next line refrences the library of game functions I've written to help with game development->
+
+
+
+    <style>* { padding: 0; margin: 0; } canvas { background: #eee; display: block; margin: 0 auto; }</style>
+</head>
+<body>
+    <div>
+        <input type="file" id="inputfile" accept=".txt">
+        <label id="curFrame" >CurFrame: 0</label>
+        <button onClick = "changeFrame(-1)"> < </button>
+        <button onClick = "changeFrame(1)"> > </button>
+        <input type="checkbox" id="autoRefresh">Auto Refresh</input>
+        <input type="range" min="1" max="100" value="50" class="slider" id="myRange">Speed
+        <label id="mouseLabel"></label>
+    </div>
+    <pre id="output"></pre>
+     <button id = "btnAddFrame" onclick = "addFrame()">Add Frame</button>
+    <div>
+   
+    <table id="myTable" style="float: left;"></table>
+    <canvas id="animCanvas" width="60" height="60" oncontextmenu="return false;" style="float: center;"></canvas>
+    </div>
+    <div>
+    <button onClick = "addRowMT()">Add Row</button>
+
+    <select name="row" id="rowSelect" onchange = "selectRow()">
+        <option value="Add New Row">Add New Row</option>
+    </select>
+    </div>
+    <div>
+    <canvas id="myCanvas" width="1200" height="600"  oncontextmenu="return false;" style="float: right" ></canvas>
+    </div>
+
+
+<script>
+    function addFrame(){
+        
+    }
+    function delFrame(index){
+        console.log("delete Frame " + index);
+        //var index = ev.target.parentElement.rowIndex
+        
+        var table = document.getElementById("myTable");
+        table.deleteRow(index);
+    }
+    function selectRow(){
+        let e = document.getElementById('rowSelect');
+        let val = e.options[e.selectedIndex].index;
+        console.log("Selected Item " + val );
+    }
+    function addRowMT(rowIndex, startX, startY, endX, endY){
+        console.log("adding row");
+        rowSelect = document.getElementById('rowSelect');
+        newVal = rowSelect.size;
+        let newOption = new Option( "Option " , newVal)
+        rowSelect.add(newOption,undefined);
+    }
+    function changeFrame(amount){
+        curFrame = curFrame + amount;
+        if (curFrame < 0){
+            curFrame = lastFrame;
+        }
+        if (curFrame > lastFrame){
+            curFrame = 0;
+        }
+        document.getElementById('curFrame').innerHTML = "CurFrame: "+ curFrame;
+        
+    }
+    function draw(){
+        loopCount++;
+        auto = document.getElementById('autoRefresh').checked;
+        
+        if (auto == true){
+            speed = 101 - document.getElementById('myRange').value;
+            if (loopCount % speed == 0){
+                changeFrame(1);
+            }
+        }
+        imgStartX = frameArray[curFrame][2];
+        imgStartY = frameArray[curFrame][3];
+        imgEndX = frameArray[curFrame][4];
+        imgEndY = frameArray[curFrame][5]
+        animCanvas.width = imgEndX - imgStartX;
+        animCanvas.height = imgEndY - imgStartY;
+        //console.log("imgStartx="+imgStartX+ " ImgstartY= " + imgStartY+ " ImageEndX=" + imgEndX+ " ImageEndY ==  " + imgEndY+ " CanvasW = "+animCanvas.width+ " ConvasH = " + animCanvas.height);
+        ctx2.drawImage(background,imgStartX,imgStartY,animCanvas.width,animCanvas.height,0,0,animCanvas.width,animCanvas.height,animCanvas.width*2,animCanvas.height*2);
+        clearPage();
+        ctx.drawImage(background,0,0);
+        drawFrame();
+        requestAnimationFrame(draw);    
+    }
+    function clearPage(){
+        ctx.beginPath();
+        ctx.rect(0, 0, canvas.width, canvas.height);
+        ctx.fillStyle = "#FFFFFF";
+        ctx.fill();
+        ctx.closePath();
+    }
+    function drawFrame(){
+        ctx.beginPath();
+        ctx.rect(imgStartX, imgStartY, imgEndX-imgStartX, imgEndY-imgStartY);
+        ctx.strokeStyle = "rgba(0, 0, 255, 0.5)";
+        ctx.stroke();
+    ctx.closePath();
+    }
+    function processCSVFile(CSVfile){
+
+      var file = CSVfile;
+      var reader = new FileReader();
+      reader.readAsText(file);
+
+      //if you need to read a csv file with a 'ISO-8859-1' encoding
+      /*reader.readAsText(file,'ISO-8859-1');*/
+
+      //When the file finish load
+      reader.onload = function(event) {
+
+        //get the file.
+        var csv = event.target.result;
+
+        //split and get the rows in an array
+        var rows = csv.split('\n');
+        frameArray = [];
+        //move line by line
+        for (var i = 0; i < rows.length; i++) {
+          //split by separator (,) and get the columns
+        addRow(i);
+            frameArray[i] = [];
+          cols = rows[i].split(',');
+
+          //move column by column
+           addRowMT(i, 0, 0,0,0);
+          //for (var j = 0; j < cols.length; j++) {
+            /*the value of the current column.
+            Do whatever you want with the value*/
+            //var value = cols[j];
+            //addCol(i,j,value);
+            //frameArray[i][j] = value;
+
+          //}
+            //** Add the delete Column
+            addDelColumn(i);
+        }
+      }
+      loadImage();
+    }
+    function addDelColumn(rowNum){
+        var newCol = document.createElement('td');
+        var newEntry = document.createElement('button');
+        newEntry.innerHTML = "Del";
+        newEntry.setAttribute("onclick" , "delFrame("+rowNum+ ");");
+        newCol.appendChild(newEntry);
+        document.getElementById('row'+rowNum).appendChild(newCol);
+
+    }
+function loadImage(){
+    canvas = document.getElementById("myCanvas");
+    ctx = canvas.getContext("2d");
+    canvas.addEventListener("mousemove", canvasMouseMoveHandler, false);
+    animCanvas = document.getElementById("animCanvas");
+    ctx2 = animCanvas.getContext("2d");
+    background = new Image();
+    background.src =  ".\\Simpsons_Bart.png";
+    //canvas.width = background.width;
+    //canvas.height = background.height;
+    background.onload = function() {
+        
+        draw();    
+    };
+    }
+function limitNumber(input, low, high){
+
+    if (input.value < 0) input.value = 0;
+    if (input.value > 1000) input.value = 100;
+    //move values to array
+    var table = document.getElementById("myTable");
+    for (var i = 0; i < table.rows.length; i++) {
+   //iterate through rows
+    var objCells = table.rows.item(i).cells;
+
+        // LOOP THROUGH EACH CELL OF THE CURENT ROW TO READ CELL VALUES.
+        for (var j = 0; j < objCells.length; j++) {
+            frameArray[i][j] = table.rows[i].cells[j].firstChild.value;
+
+        }
+   //rows would be accessed using the "row" variable assigned in the for loop
+   
+     //iterate through columns
+  
+
+     //columns would be accessed using the "col" variable assigned in the for loop
+   }  
+}
+function addRow(rowNum){
+    var newRow = document.createElement('tr');
+    newRow.setAttribute("id","row"+rowNum);
+    document.getElementById('myTable').appendChild(newRow);
+    lastFrame = rowNum;
+    document.getElementById('curFrame').innerHTML = "CurFrame: "+ curFrame;
+
+    
+}
+function addCol(rowNum,colNum, val){
+    var newCol = document.createElement('td');
+    var newEntry = document.createElement('input');
+    //newEntry.type = 'number';
+    newEntry.value = val;
+
+    //newEntry.min = "0";
+    //newEntry.max = "3000";
+    newEntry.size = 5;
+    newEntry.setAttribute("onchange" , "limitNumber(this,0,100);");
+    newCol.setAttribute("id","col"+colNum);
+    newCol.appendChild(newEntry);
+    document.getElementById('row'+rowNum).appendChild(newCol);
+
+    
+}
+function offset(el) {
+    var rect = el.getBoundingClientRect(),
+    scrollLeft = window.pageXOffset || document.documentElement.scrollLeft,
+    scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+    return { top: rect.top + scrollTop, left: rect.left + scrollLeft }
+}
+function keyDownHandler(e){
+    console.log("keydown");
+}
+
+function keyUpHandler(e){
+     console.log("keyup");   
+}
+function mouseMoveHandler(e){
+
+}
+
+function mouseUpHandler(e){
+    console.log("mouseup");    
+}
+function mouseDownHandler(e){
+    console.log("mousedown");    
+}
+function canvasMouseMoveHandler(e){
+     document.getElementById('mouseLabel').innerHTML= "X=" + (e.clientX-offset(canvas).left) + " Y=" + (e.clientY-offset(canvas).top);
+
+}
+/*
+*/ 
+  document.getElementById('inputfile') 
+        .addEventListener('change', function() { 
+        processCSVFile(this.files[0]);
+        curFrame = 0;
+        loopCount = 0;
+        speed = 20;
+        //var fr=new FileReader(); 
+        //fr.onload=function(){ 
+        //    document.getElementById('output') 
+        //            .textContent=fr.result; 
+        //} 
+
+        //fr.readAsText(this.files[0]); 
+    }) 
+    //Defining document the EVENT LISTENERS - looks for any keybord key being pressed and released
+    //Note that it is in these EventHandler functions that you actually capture WHICH key was pressed or released.  For each key you
+    //are interested in you then perform specific actions.  In the approach I have here we are simply indicating if the key is pressed or
+    //not by changing the related keypressed variable to true or false.  Then we take actions later based on these variables
+
+    document.addEventListener("keydown", keyDownHandler, false);
+    document.addEventListener("keyup", keyUpHandler, false);
+    document.addEventListener("mousemove", mouseMoveHandler, false);
+    //document.addEventListener("mousedown", mouseDownHandler, false);
+    //document.addEventListener("mouseup", mouseUpHandler, false);
+
+</script>
+
+</body>
+</html>

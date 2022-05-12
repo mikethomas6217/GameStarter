@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title>Game Template</title>
+    <!- This next line refrences the library of game functions I've written to help with game development->
+    <script type="text/javascript" src="gamefunctions_V3_0.js" ></script>
+    <style>* { padding: 0; margin: 0; } canvas { background: #eee; display: block; margin: 0 auto; }</style>
+</head>
+<body>
+    <canvas id="myCanvas" width="1200" height="600" oncontextmenu="return false;" ></canvas>
+    <text id="debug"></text>
+<script>
+//************************************Game Functions ****************************************
+//functions you have written that are unique to your game
+
+//*** Event handlers
+//*** The following event handlers are written to use functions built
+//*** intop the game library.  If you want them to work differently than
+//*** the library simply replace them with your own.  By default the key
+//*** handlers keep track of each key (unique names defined for each) //*** markgin them as either true if pressed or false if not
+    function keyDownHandler(e) {
+          myKeys.processDownKey(e);
+    }
+    function keyUpHandler(e) {
+        myKeys.processUpKey(e);
+    }
+//*** the mouse handlers keep track of both WHERE the mouse is at all
+//***  times AND if any of the buttons is currenly pressed or not
+    function mouseMoveHandler(e) {
+        myKeys.processMouseMove(e);
+    }
+    function mouseUpHandler(e) {
+        myKeys.processMouseUp(e);
+    }
+    function mouseDownHandler(e) {
+        myKeys.processMouseDown(e);
+    }
+    //Make a crunching sound for pacman.  I didn't want him to crunch
+    //every time we refreshed, so I ony do it is val is evenly divisible
+    //by 19 - kind of an arbitrry number I know
+    function makeCrunch(val) {
+        if (val % 19 == 0) {
+            createAudio(game.soundDir +'pacman_chomp.wav');
+        }
+    }
+    
+    // This loops through all the terrain images and prints them out
+    // This is an example of grouping all like "objects" in an array
+    // Not only does it make drawing each object a one command process
+    // but we can di similar checks - such as collision against all of
+    // these items by loooping as well
+    function drawAllTerrain(){
+        for(i=0; i < TerrainArray.length; i++){
+            TerrainArray[i].draw();
+        }
+    }
+    
+    //**********************Main draw function **************************
+    //This is really the code that is run EVERY TIME we do a screen
+    //refresh
+    //*******************************************************************
+       function draw() {         
+        //I like to do any COLLISION or other logic that may impact the
+        // game prior to making the final drawings
+        //Note that for each direction ( left, right, up , down) I use
+        //a differnt coillision check - this allows me to move from a 
+        //state of collision if I move in a different direction
+        //Also - I "break" if I do collide because the collision
+        //property is reset for each itemn in the array and I only care
+        //if I colided with ANY of the items.
+           
+        //This is where I'm calling the AdvanceFrame function for Sprites
+        //or SpriteArrays that continuously update  - things like fire or 
+        //jewels, or in this case the star
+           
+        //Advanceframe will automatically move us to the next image in
+        //the SpriteSheet
+           
+        //The game.gameIterator is just a variable that is incremented
+        //every screen refresh
+        //By seeing if it can be evenly divided by 15 - this says -
+        //advance the frame every
+        //15th screen refresh - you'll want to play with the numbers of
+        //your own items to see what the right refresh rate is for them
+            if (game.gameIterator%15 == 0){
+                aStar.advanceFrame();
+            }
+     
+        //***  STEP #1 Process any keystrokes / mouse movements
+        //*** If you have any Automated movements by your computer
+        //** "adversaries" I'd place that logic here too
+        //Process clicks - just checking the status of any keys I'm interested in
+   
+        if (myKeys.rightArrow) {
+            //Put in logic to check collision with terrain
+            for(i=0; i < TerrainArray.length; i++){
+                pacman.checkRightCollision(TerrainArray[i]);
+                if (pacman.collision){
+                    break;
+                }
+            }
+            if (!pacman.collision) {
+            pacman.x = pacman.x + 1;
+            if (pacman.x> canvas.width) {
+                pacman.x = 1;
+            }
+            // My Sprite actually has 4 rows ( one for each direction) and 3 Frames ( columns) each
+            pacman.currentDir = 0;
+            pacman.advanceFrame();
+            makeCrunch(game.gameIterator);
+            }
+        }
+ 
+        if (myKeys.leftArrow) {
+            for(i=0; i < TerrainArray.length; i++){
+                pacman.checkLeftCollision(TerrainArray[i]);
+                if (pacman.collision){
+                    break;
+                }
+            }
+            //console.log(hex);
+            if (!pacman.collision) {
+            pacman.x = pacman.x  - 1;
+            if (pacman.x <0) {
+                pacman.x  = canvas.width;
+            }
+            pacman.currentDir  = 1;
+            pacman.advanceFrame();
+            makeCrunch(game.gameIterator);
+            }
+        }
+
+        if (myKeys.upArrow) {
+            for(i=0; i < TerrainArray.length; i++){
+                pacman.checkTopCollision(TerrainArray[i]);
+                if (pacman.collision){
+                    break;
+                }
+            }
+            if (!pacman.collision) {
+                pacman.y = pacman.y - 1;
+                pacman.currentDir = 2;
+                pacman.advanceFrame();
+                makeCrunch(game.gameIterator);
+            }
+
+        }
+        if (myKeys.downArrow) {
+            if (pacman.checkBottomCollision(orc)){
+                pacman.visible = false;
+            }
+
+            pacman.collision = false;
+
+            for(i=0; i < TerrainArray.length; i++){
+                pacman.checkBottomCollision(TerrainArray[i]);
+                if (pacman.collision){
+                    break;
+                }
+            }
+
+            if (!pacman.collision){
+                pacman.y = pacman.y + 1;
+                pacman.currentDir = 3;
+                pacman.advanceFrame();
+                makeCrunch(game.gameIterator);
+            }    
+        }
+
+    //*** STEP #2 Any game logic *****
+           
+    //While this could go earlier as well - I consider this logic part of drawing
+    //Specifically, this area of logic is all about potentially changing
+    //the actualimage that is displayed for some elements.  Some of these
+    // decision are better handled in earlier logic, so this is just a
+    //catch all for image changes that are not tied to earlier events
+           
+    //This simply changes the size of pacman if he collided with the orc
+    pacman.checkCollisions(orc);
+    if(pacman.collision){
+        pacman.useHeight = pacman.height * 1.5;
+        pacman.useWidth = pacman.width * 1.5;
+    }
+    //*******************************************************************
+    //**********************Now Draw everything *************************
+    //*******************************************************************
+    //FIRST Clear the Screen to prepare for a repaint   
+           
+    if (game.gameIterator ==200 ){
+        //createAudio(game.soundDir +'Pacman_Intro.mp3');
+        createAudio(game.soundDir +'pacman_chomp.wav');
+    }
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+           
+   //First draw the background image
+    bg.draw();
+   //Now draw any ACTIVE images
+    //The "drawAll" funtion just loops through an array of sprites and
+    //performs the draw function for each
+    drawAllTerrain();
+    //drawing some text on the screen
+    score.fillStyle = "red";
+    score.draw("SCORE: "+ game.gameIterator/30);
+    life.draw("My life is gone");
+    aStar.draw();
+           
+    //pacman is a sprint in a 4x4 grid - each image is 128x128
+    //I am rescaling it down to 32x32
+    pacman.draw();
+    orc.draw();
+    //KEEP THIS COMMAND right where it is, at the end of the draw function - this controls the rate the repaint occurs and keeps it consistent regardless of the speed of the computer
+    game.gameIterate();
+    game.debugAppend("Score:");       
+    game.debugAppend(game.gameIterator);
+    game.debug();
+    requestAnimationFrame(draw);    
+}
+
+//**************************************************************************************
+// *********************** Begin Main portion of program *******************************
+//**************************************************************************************
+//** You can actually think of this as the initialization phase of the program.  This is
+//** where you first load your images and create any variables you'll use throughout the
+//** rest of the program
+
+//**DO NOT remove these two variables.  
+//**They are what help us "reference" the canvas and "paint" on it
+    var canvas = document.getElementById("myCanvas");
+    var ctx = canvas.getContext("2d");
+    
+    
+    //SpritesSheet expects a one image sprite sheet to be sent to it
+    
+    //These variables help us track keypresses - if you add more keypresses you'll want to add more of these variables to track them
+    
+        
+    
+
+    //Variables that determine how fast (and if) the background moves.  If the background
+    //does NOT move set both to 0 - this si the default;
+    //game.bgDX = -1;
+    //game.bgDY = 0;
+    
+    //Defining the EVENT LISTENERS - looks for any keybord key being pressed and released
+    //Note that it is in these EventHandler functions that you actually capture WHICH key was pressed or released.  For each key you
+    //are interested in you then perform specific actions.  In the approach I have here we are simply indicating if the key is pressed or
+    //not by changing the related keypressed variable to true or false.  Then we take actions later based on these variables
+
+    document.addEventListener("keydown", keyDownHandler, false);
+    document.addEventListener("keyup", keyUpHandler, false);
+    document.addEventListener("mousemove", mouseMoveHandler, false);
+    document.addEventListener("mousedown", mouseDownHandler, false);
+    document.addEventListener("mouseup", mouseUpHandler, false);
+    // ************* Loading/creating your characters, background,
+    // ***  and terrain.  This is all what I would call "pre-processing
+    // *** Kind of all the setup work that must occur BEFORE we actually
+    // *** get into our game loop
+    // ******************************************************************
+    
+    // Create the game Object - Always have this declared as it has
+    //important properies other areas depend upon
+    var game = new GameMaster();
+    
+    // Object that holds all keypress and release data   
+    var myKeys = new KeysPresses(); 
+    
+    //Score is simply an object that displays text on the screen - in
+    //this case Score
+    //I'm also setting some of its properties so it prints where I want
+    //and looking the way I want it to look
+    var score = new GameText();
+    score.font = "48px Arial";
+    score.fillStyle = "Blue";
+    score.x = 800;
+    score.y = 45;
+    score.alpha = 0.5;
+    
+    var life = new GameText();
+    life.font = "48px Arial";
+    life.fillStyle = "Green";
+    life.x = 0;
+    life.y = 45;
+    life.alpha = 1.0;
+    
+    //** this is an example of a SpriteArray.  Instead of all of the
+    //** Sprite images being in a single file like pacman, they are
+    //** spread across multiple files.  We create an array of images
+    //** and the SpriteArray object knows to rotate through them in 
+    //** the draw method
+    var starArray = [];
+    starArray[0] = game.imageDir + "star coin rotate 1.png";
+    starArray[1] = game.imageDir + "star coin rotate 2.png";
+    starArray[2] = game.imageDir + "star coin rotate 3.png";
+    starArray[3] = game.imageDir + "star coin rotate 4.png";
+    starArray[4] = game.imageDir + "star coin rotate 5.png";
+    starArray[5] = game.imageDir + "star coin rotate 6.png";
+
+    aStar = new SpriteArray(45,45,1957,2242, 45, 45,0, 0, starArray);
+    
+    //*** Loading array of terrains - each as 70x70 pixels
+    var imgGrassCenter = new Image();
+    imgGrassCenter.src = game.imageDir + "grassCenter.png";
+    
+    var imgGrassCliffLeftAlt = new Image();
+    imgGrassCliffLeftAlt.src = game.imageDir + "grassCliffLeftAlt.png";
+    
+    var imgGrassCliffRightAlt = new Image();
+    imgGrassCliffRightAlt.src = game.imageDir + "grassCliffRightAlt.png";
+    
+    var imgGrassMid = new Image();
+    imgGrassMid.src = game.imageDir + "grassMid.png";
+ 
+    var background = new Image();
+    background.src = game.imageDir + "maze2.png";
+    
+    //While this says Scrolling background - it need not scroll
+    var bg = new ScrollingBackGround(0,0,1200,600,1200,600,background);
+    
+    //Terrain is all of the ground in the game.  It is in an arrays because I
+    //know I want to treat each of them the same in the game.  In other words
+    //I know that I want pacman to always stop moving if he collides with them
+    //
+    //I may very well have other 'object' that I want to treat similarly as well
+    //so I'll likley put those all in an array as well - such as if pacman collects
+    //'dots' all of these might be in an array so I can just loop through them and
+    //perform the same action if pacman collides with them.  If your game 'shoots'
+    //you'll likley also want to do this for all of the bullets fired
+    var TerrainArray= [];
+    TerrainArray[0] = new Sprite(40,200,70,70,70,70,imgGrassCliffLeftAlt);
+    TerrainArray[1] = new Sprite(110,200,70,70,70,70,imgGrassMid);
+    TerrainArray[2] = new Sprite(180,200,70,70,70,70,imgGrassMid);
+    TerrainArray[3] = new Sprite(250,200,70,70,70,70,imgGrassCliffRightAlt);
+    
+    TerrainArray[4] = new Sprite(140,310,70,70,70,70,imgGrassCliffLeftAlt);
+    TerrainArray[5] = new Sprite(210,310,70,70,70,70,imgGrassMid);
+    TerrainArray[6] = new Sprite(280,310,70,70,70,70,imgGrassMid);
+    TerrainArray[7] = new Sprite(350,310,70,70,70,70,imgGrassCliffRightAlt);
+    //Setting the additional properties - here I'm setting it so the terrain scrolls with 
+    //the background and to be drawn semi-transparent
+    for ( i = 0; i < TerrainArray.length; i++){
+        TerrainArray[i].alpha = 0.5; //making all terrain is semi-transparent
+        TerrainArray[i].moveWithBackground = true;
+    }
+    
+    //A good time to call any introduction sounds - I have them commented out for now
+    
+    
+    
+    var orcImg = new Image();
+    orcImg.src = game.imageDir + "orc-green.png";
+    orc = new SpriteSheet (300,200,48,64,48,64,4,3,orcImg);
+    orc.currentDir = 2;
+    //****************************** Final Image Load Section *********
+    //** OK - this is odd, but there is a reason for this...
+    //** images can take a while to load - at least in computer time, so
+    //** we want to make sure they have all loaded BEFORE, we actually 
+    //** start the game. For this reason we don't call the draw() function
+    //** ( which is our game loop) until the last image has loaded.  In
+    //** this case that is the pacman.png image. The onload is an event
+    //** that is triggered when the image variable imgPacman is actually
+    //** loaded.  At that point we know it is safe call the draw() 
+    //** function - which starts our gameloop
+    //** **********************************************************************
+    var imgPacman = new Image();
+    imgPacman.src = game.imageDir + "spider01.png";
+    imgPacman.onload = function() {
+        pacman = new SpriteSheet (100,100,64,64,256,128, 9,4,imgPacman);
+
+
+        draw();
+    };
+
+
+</script>
+
+</body>
+</html>

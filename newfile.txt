@@ -1,0 +1,6 @@
+Text as entered in the master originally
+First Line
+Second Line
+Thrird Line changed in branch
+Fourth Line
+Fifth Line
